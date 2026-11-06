@@ -1,4 +1,4 @@
-from reportlab.lib.pagesizes import A4
+﻿from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
@@ -13,7 +13,7 @@ bul=lambda t: P("&bull; "+t)
 doc=SimpleDocTemplate("Solution_Doc_Promo_Finder.pdf",pagesize=A4,leftMargin=14*mm,rightMargin=14*mm,topMargin=11*mm,bottomMargin=10*mm)
 s=[]
 s+= [P("Kuku AI Generalist - Problem 1: Promo Finder",T),
- P("<b>Input:</b> 50 episodes (~103 min) of <i>I Married a Broken Soldier. He Was a Duke</i>. <b>Output:</b> 25 ranked promos + best promo per episode. <b>Prototype:</b> [GitHub link] &nbsp; <b>Run time:</b> ~10 s, no API key.",B)]
+ P("<b>Input:</b> 50 episodes (~103 min) of <i>I Married a Broken Soldier. He Was a Duke</i>. <b>Output:</b> 25 ranked promos + best promo per episode. <b>Prototype:</b> github.com/srinuk9570/kuku-promo-finder &nbsp; <b>Run time:</b> ~4 s, no API key.",B)]
 s+= [P("1. Why Problem 1, and assumptions",H),
  bul("Chosen because it is the only problem with a real input pack and a checkable output (timestamps), so I can show real runs and real failures rather than claims."),
  bul("Assumed: a promo may be 1 continuous clip or 2 stitched segments; it starts/ends on dialogue boundaries (no mid-line cuts); hook = first 3 s must contain speech or a violent/reveal action; ending must leave a question/threat open; a viewer has not seen the show; late-series twists (after ~40% of episodes) are mildly penalised to avoid spoilers."),
@@ -48,3 +48,4 @@ s+= [P("5. Scale and cost; AI usage",H),
  bul("Editor workflow: tool outputs a shortlist with timestamps + reasons + risks; editor watches ~25 clips instead of ~100 min, and approves. Success metric once live: share of editor-approved promos among top 10 (target &gt;50%), time-to-first-promo per show, then promo click-through/install per post."),
  bul("<b>Tools used:</b> Claude (planned, wrote and debugged the code and this doc). <b>Where AI got it wrong:</b> my first scoring pass kept the field name <i>hook</i> for both the numeric score and the hook text, so the first full run crashed with a TypeError; and my first parser silently read episode 6 as 0 seconds because of header casing. Both caught by running, not by reading. My own tuning of endings was done against my own labels, so 0.61 is optimistic.")]
 doc.build(s)
+

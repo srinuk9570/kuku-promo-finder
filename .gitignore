@@ -2,3 +2,4 @@ raw_outputs/
 *.txt
 *.zip
 __pycache__/
+outputs_test/

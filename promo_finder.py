@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
 Promo Finder: reads microdrama screenplays (timestamped) and proposes 20-60s promo clips.
 
@@ -23,12 +23,12 @@ HOOK_WORDS = r"\b(slap|slapped|divorce|pregnan\w*|kill|killed|die|dead|death|mur
 REVEAL_WORDS = r"\b(gallows|arrest\w*|warrant|witch\w*|prisoner|trial|flame|burn\w*|ash|someone is coming|going somewhere|lawful|rightful|dead duke|not .{0,20}wife|ten days|duke|king|queen|prince|emperor|heir|royal|crown|identity|truth|secret|real|actually|was never|all along|you\s+knew|knew all|pregnan\w*|alive|dead|poison\w*|traitor|betray\w*|signed|proof|evidence|letter|ring|seal|sword|blood|the one)\b"
 VIOLENCE_ACTION = r"\b(slap\w*|strikes?|shoves?|slams?|throws?|hurls?|grabs?|seizes?|draws? (?:a |his |her )?(?:sword|dagger|blade)|collapses?|faints?|stabs?|chokes?|drags?|tears?|rips?|shatters?|bursts? (?:in|open)|kneels?|unmask\w*|reveals?|removes? (?:his|her) (?:mask|hood)|crowd gasps?|gasps?)\b"
 STRONG_TONE = r"(furious|shock\w*|menac\w*|cold|icy|ominous|threat\w*|desperate|trembl\w*|sneer\w*|cruel|enrag\w*|stunn\w*|horrif\w*|defian\w*|command\w*|dangerous|seeth\w*|panic\w*|tearful|pleading|accus\w*|mock\w*|arrogant|vicious|triumph\w*|fearless|authorit\w*|explosive|booming|whisper\w*)"
-RESOLVED_END = r"\b(thank you|thanks|goodnight|good night|goodbye|farewell|sleep well|rest now|see you|of course|very well|as you wish|i understand|all right|alright)\b[\s.!\"”]*$"
-CONNECTIVE_START = r"^[\"“]?\s*(yes|no|and|but|so|because|then|well|that|this|he|she|they|it|him|her|them|why|what do you mean|exactly|indeed|right|okay|ok)\b"
+RESOLVED_END = r"\b(thank you|thanks|goodnight|good night|goodbye|farewell|sleep well|rest now|see you|of course|very well|as you wish|i understand|all right|alright)\b[\s.!\"â€]*$"
+CONNECTIVE_START = r"^[\"â€œ]?\s*(yes|no|and|but|so|because|then|well|that|this|he|she|they|it|him|her|them|why|what do you mean|exactly|indeed|right|okay|ok)\b"
 SOFT_END = r"\b(perhaps|trust|peace|safe|afraid|together|begin again|simple|home|love|hope|grateful|proud|better than|reason to|wrong|i didn.?t need)\b"
 SPOILER_TERMS = r"\b(true identity|reveal\w*|duke)\b"
 
-def clean(t): return re.sub(r"\s+", " ", t.strip().strip('"“”'))
+def clean(t): return re.sub(r"\s+", " ", t.strip().strip('"â€œâ€'))
 
 # ---------- beats ----------
 def beats_of(ep):
@@ -62,7 +62,7 @@ def hook_score(wbeats, a):
     if "!" in txt or "?" in txt: s += 0.10; why.append("!/? punctuation")
     if d and len(clean(d[0]["text"]).split()) <= 14: s += 0.05   # punchy
     if d and re.match(CONNECTIVE_START, clean(d[0]["text"]), re.I): s -= 0.20; why.append("opens on reply/pronoun (needs context)")
-    if d and re.match(r"^[\"“]?\s*(\.{2,}|…)", d[0]["text"].strip()): s -= 0.30; why.append("opens mid-sentence (starts with ellipsis)")
+    if d and re.match(r"^[\"â€œ]?\s*(\.{2,}|â€¦)", d[0]["text"].strip()): s -= 0.30; why.append("opens mid-sentence (starts with ellipsis)")
     if d and re.search(r"off-?screen|voice", d[0]["speaker"] or "", re.I): s -= 0.10; why.append("opens on off-screen voice")
     return max(0.0, min(1.0, s)), why
 
@@ -73,11 +73,11 @@ def cliff_score(wbeats, b, ep_dur, ep_ends_here, nxt=None):
     if not d: return 0.0, ["no speech at end"]
     last = clean(d[-1]["text"]); txt = " ".join(clean(x["text"]) for x in d)
     if ep_ends_here: s += 0.15; why.append("episode ending (designed cliffhanger)")
-    if re.search(r"(\?|\.{2,}|…|—|-)[\"”\s]*$", d[-1]["text"].strip()): s += 0.20; why.append("ends on question/ellipsis/interruption")
+    if re.search(r"(\?|\.{2,}|â€¦|â€”|-)[\"â€\s]*$", d[-1]["text"].strip()): s += 0.20; why.append("ends on question/ellipsis/interruption")
     if re.search(REVEAL_WORDS, txt, re.I): s += 0.20; why.append("reveal/threat words in last beats")
     if re.search(STRONG_TONE, " ".join(x["tone"] for x in d), re.I): s += 0.10; why.append("tense delivery")
     if any(x["kind"] == "SOUND" and re.search(r"(sting|cliff|ominous|swell|silence|gasp|thud|crash)", x["text"], re.I) for x in tail): s += 0.10; why.append("sound sting")
-    if nxt is not None and re.match(r"^[\"“]?\s*(\.{2,}|…)", nxt["text"].strip()): s -= 0.30; why.append("cuts mid-sentence (next line continues the thought)")
+    if nxt is not None and re.match(r"^[\"â€œ]?\s*(\.{2,}|â€¦)", nxt["text"].strip()): s -= 0.30; why.append("cuts mid-sentence (next line continues the thought)")
     if re.search(SOFT_END, " ".join(clean(x["text"]) for x in d[-2:]), re.I) and "?" not in last: s -= 0.25; why.append("soft/reflective ending (low tension)")
     if re.search(RESOLVED_END, last, re.I): s -= 0.35; why.append("ends on a resolving line")
     return max(0.0, min(1.0, s)), why
@@ -102,7 +102,7 @@ def standalone_score(wbeats, ep, a):
     scenes = {x["scene"] for x in wbeats}
     if len(scenes) > 2: s -= 0.20; why.append("spans 3+ scenes")
     # does a named/relational anchor show up (who is who)? proxy: names or kinship/titles in window
-    if not re.search(r"\b(husband|wife|sister|mother|father|duke|lord|lady|king|queen|fiance|fiancé|bride|groom|brother|daughter|son)\b", " ".join(x["text"] for x in wbeats), re.I): s -= 0.15; why.append("no relationship cue in window")
+    if not re.search(r"\b(husband|wife|sister|mother|father|duke|lord|lady|king|queen|fiance|fiancÃ©|bride|groom|brother|daughter|son)\b", " ".join(x["text"] for x in wbeats), re.I): s -= 0.15; why.append("no relationship cue in window")
     return max(0.0, s), why
 
 def length_score(L):
@@ -223,7 +223,7 @@ def write_outputs(picked, by, outdir, n_cands):
                duration_s=c["duration"], hook=c["hook_text"], cliffhanger=c["cliff_text"], why=c["why"],
                score=round(c["score"], 3), subscores={k: round(c[k], 2) for k in ("hook", "cliff", "intensity", "standalone", "length")},
                risks=c["stand_why"], transcript=c["text"]) for c in picked]
-    json.dump(js, open(os.path.join(outdir, "promos.json"), "w"), indent=2, ensure_ascii=False)
+    json.dump(js, open(os.path.join(outdir, "promos.json"), "w", encoding="utf-8"), indent=2, ensure_ascii=False)
     with open(os.path.join(outdir, "promos.csv"), "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f); w.writerow(["rank", "episode", "segments", "duration_s", "score", "hook", "cliffhanger", "why", "risks"])
         for c in picked: w.writerow([c["rank"], c["ep"], seg_str(c), c["duration"], round(c["score"], 3), c["hook_text"], c["cliff_text"], c["why"], "; ".join(c["stand_why"])])
@@ -252,3 +252,4 @@ if __name__ == "__main__":
         w = csv.writer(f); w.writerow(["episode", "segments", "duration_s", "score", "hook", "cliffhanger", "why"])
         for c in allbest: w.writerow([c["ep"], " + ".join(f"{fmt(x)}-{fmt(y)}" for x, y in c["segments"]), c["duration"], round(c["score"], 3), c["hook_text"], c["cliff_text"], c["why"]])
     print(f"scored {n} windows; wrote {len(picked)} promos to {a.out}/")
+

@@ -1,0 +1,4 @@
+raw_outputs/
+*.txt
+*.zip
+__pycache__/
